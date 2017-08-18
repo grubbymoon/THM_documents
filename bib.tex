@@ -1,0 +1,261 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[draft]{todonotes} %OK notes showed
+%\usepackage[latin9,utf8]{inputenc}
+\usepackage[british]{babel}  % use UK hyphenation, etc.
+\usepackage[T1]{fontenc}     % font printing
+\usepackage{ae,aecompl}      % scalable, non-bitmap fonts
+\usepackage{graphicx}        %standard LaTeX graphics tool  when including figure files
+\usepackage{epstopdf}        % using eps with pdftex
+%\usepackage{subfigure}       %
+\usepackage[section]{placeins} % allows the use of \FloatBarrier and restrict the floating to the section JM
+\usepackage{wrapfig}         % floating figures
+\usepackage{fixltx2e}        % correct use of sub/superscripts
+\usepackage{enumerate}       % lower case roman numerals
+\usepackage{fancyhdr}        % header layout
+\usepackage[square,sort,comma,numbers]{natbib} % author/year refs
+\usepackage{array}
+\usepackage{units}
+\usepackage{amsmath}
+\usepackage{makeidx} % fuer Stichwortverzeichnis OK
+\usepackage{multicol} % fuer Stichwortverzeichnis OK
+\usepackage{bm}   %fuer fette Griechen JM
+\usepackage{multirow} % for multirow
+\usepackage{caption}
+\usepackage{subcaption}
+%\expandafter\def\csname ver@subfig.sty\endcsname{}
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{curves}
+\usepackage{tabularx}
+%\usepackage{subfig}
+\usepackage{booktabs}
+\usepackage{ulem}
+\usepackage{pdfpages}
+\usepackage{textcomp}
+\input{mycommands}
+
+\title{Thermo-Hydro-Mechanical Process}
+\author{Tianyuan Zheng, Xing-Yuan Miao, Thomas Nagel}
+
+\begin{document}
+
+\maketitle
+
+\section{Governing equations}
+
+The numerical analysis of multi-field problems in porous media is an important task for different geo-engineering subjects (e.g., geothermal energy, oil and gas reservoirs, energy storage and nuclear waste management). In particular, the coupling between heat transport and biphasic consolidation in saturated porous media is of high practical relevance. 
+
+To simulate the thermo-hydro-mechanical processes, the basic set of governing equations is given as:
+\begin{itemize}
+\item Mass (volume) balance
+\begin{equation}
+\mrm{div} \left[ (\mbfs{\mrm{u}}_\mrm{S})'_\mrm{S} + \phi_\mrm{F} \mbfs{\mrm{w}}_\mrm{FS} \right] = \underbrace{\beta^\mrm{eff}_\mrm{T} T'_\mrm{S}}_{\text{first term}} + \underbrace{\phi_\mrm{F} \beta_\mrm{TF} \mrm{grad}\, T \cdot \mbfs{\mrm{w}}_\mrm{FS}}_{\text{second term}}
+\label{eq:mass_b_thm}
+\end{equation}
+with
+$\phi_\mrm{F} \mbfs{\mrm{w}}_\mrm{FS} = - \mbfs{\kappa}_\mrm{F}/\mu_\mrm{FR} \left[ \mrm{grad}\, p - \varrho_\mrm{FR} \mbfs{g} \right]$ and
+$\beta^\mrm{eff}_\mrm{T} = \phi_\mrm{F} \beta_\mrm{TF} + 3 (1 - \phi_\mrm{F}) \alpha_\mrm{TS}$
+\item Momentum balance
+\begin{equation}
+\mrm{div} \left[ \mbfs{\sigma}^\mrm{E}_\mrm{S} - \alpha_\mrm{B} p \mbfs{I} \right] + \varrho^\mrm{eff} \mbfs{g} = \mbfs{0}
+\label{eq:mom_b_thm}
+\end{equation}
+with
+$\mbfs{\sigma}^\mrm{E}_\mrm{S} = \mbfs{\mathcal{C}} : (\mbfs{\epsilon} - \mbfs{\epsilon}_\mrm{th})$ and $\mbfs{\epsilon}_\mrm{th} = \mbfs{\alpha}_\mrm{TS} \Delta T$
+\item Energy balance
+\begin{equation}
+(\varrho c_p)^\mrm{eff} \frac{\partial T}{\partial t} + \phi_\mrm{F} \varrho_\mrm{FR} c_{p\mrm{F}} \mrm{grad}\, T \cdot \mbfs{\mrm{w}}_\mrm{FS} - \mrm{div} \left[ \mbfs{\lambda}^\mrm{eff} \mrm{grad}\, T \right]
+\end{equation}
+\end{itemize}
+where $\alpha_\mrm{TS}$ is the linear coefficient of thermal expansion of the solid phase, $\beta_\mrm{TF}$ is the volumetric coefficient of thermal expansion of the fluid phase. $\phi_\mrm{F}$ is the porosity. $\mbfs{\kappa}_\mrm{F}$ is the intrinsic permeability, $\mu_\mrm{FR}$ is the viscosity, $\alpha_\mrm{B}$ is the Biot coefficient, $\mbfs{\sigma}^\mrm{E}_\mrm{S}$ are the effective Cauchy stresses, $T$ is the absolute temperature, $p$ is the pore pressure, $\mbfs{\lambda}$ the heat conductivity and $\left( \bullet \right)'_\alpha$ denotes a material time derivative following the motion of the $\alpha^\mrm{th}$ constituent.
+
+In OGS-6, a model is available in which the three governing equations are assembled and solved monolithically. Different constitutive relations (e.g. elasto-plasticity, visco-elasticity) can be used to describe the material behaviour of the porous solid. For initial verification, the case of a linearly elastic solid matrix is considered here. Three numerical benchmarks were performed to verify the numerical results of thermo-hydro-mechanical process with analytical solutions. A homogeneous square model, a bi-material beam model and a point heat source consolidation model were set up for the verification. 
+
+\section*{Homogeneous square model}
+In this case, an axisymmetric homogeneous domain (see Fig. \ref{fig:beam_homogeneous_conceptual}) was set up with the length of 1\,mm. The whole domain was heated up from the left boundary from 273.15\,K to 353.15\,K and the liquid was sealed in the area from the surrounding Neumann no flow boundary. 
+\begin{figure}
+	\centering
+		\includegraphics*[width=3in, keepaspectratio=false]{figures/scu.pdf}
+	\caption{2D domain and FE mesh. Square 1.0 $\times$ 1.0 mm; 10 $\times$ 10 elements}
+	\label{fig:beam_homogeneous_conceptual}
+\end{figure} 
+After 10000\,s, the result of the numerical solution reached steady state with homogeneous pressure of 0.1042\,MPa. 
+Then the analytical solution of the fluid pressure created by volume expansion (see Eq. \ref{eq:homo_pressure_analytical})is derived through the definition of general volumetric thermal expansion coefficient.
+\begin{equation}
+\label{eq:beta_mix}
+\beta_\mrm{TM} = \frac{1}{V_\mrm{S} + V_\mrm{F}}\left( \frac{\partial V_\mrm{S}}{\partial T} + \frac{\partial V_\mrm{F}}{\partial T} \right)
+\end{equation}
+with
+\begin{equation}
+\begin{split}
+& \beta_\mrm{TS} = \frac{1}{V_\mrm{S}}\left( \frac{\partial V_\mrm{S}}{\partial T} \right) \\
+& \beta_\mrm{TF} = \frac{1}{V_\mrm{F}}\left( \frac{\partial V_\mrm{F}}{\partial T} \right) \\
+& \phi_\mrm{S} = \frac{V_\mrm{S}}{V_\mrm{S} + V_\mrm{F}} \\
+& \phi_\mrm{F} = \frac{V_\mrm{F}}{V_\mrm{S} + V_\mrm{F}} \\
+\end{split}
+\end{equation}
+In which $V_\mrm{S}, V_\mrm{F}$ represent the original volume of the solid phase and the fluid phase. $\beta_\mrm{TS}$ and $\beta_\mrm{TF}$ are the volumetric coefficient of thermal expansion of the solid phase and the fluid phase, where $\beta_\mrm{TS} = 3\alpha_\mrm{TS}$. $\phi_\mrm{S}$ and $\phi_\mrm{F}$ are the volume fractions of the solid phase and fluid phase. \\
+With the modification of Eq. \ref{eq:beta_mix}, the effective volumetric coefficient of thermal expansion with respect to volume fraction and volumetric thermal expansion of each phase can be written as:
+\begin{equation}
+\beta_\mrm{TM} = \phi_\mrm{S}\beta_\mrm{TS} + \phi_\mrm{F}\beta_\mrm{TF}
+\end{equation}
+Then the volumetric strain can be obtained according to the effective volumetric coefficient of thermal expansion and the temperature difference:
+\begin{equation}
+e_\mrm{M} = \beta_\mrm{TM}\triangle T
+\end{equation}
+\begin{equation}
+\label{eq:homo_pressure_analytical}
+\begin{split}
+p & = -K_\mrm{S}(e_\mrm{M} - e^\mrm{th}) \\
+  & = -K_\mrm{S}\phi_\mrm{F}(\beta_\mrm{TF} - \beta_\mrm{TS})\triangle T
+\end{split}
+\end{equation}
+where $e^\mrm{th} = \beta_\mrm{TS}\triangle T$. Using the analytical solution, the steady state pressure in the whole domain is 0.1042\,MPa with Young's Modulus of 21\,MPa, Possion's ratio of 0.3, porosity of 0.4, volumetric thermal expansion coefficient of 2.07$\times10^{-4}$ for fluid and linear thermal expansion coefficient of 0.7$\times10^{-5}$ for solid. The numerical solution used newton-rapson method for nonlinear solver with tolerance of $10^{-7}$, $10^{-5}$, $10^{-5}$, $10^{-5}$ for primary variables and BiCGSTAB for the linear solver. The numerical solution reaches steady state within 10000\,s and equals 0.1042\,MPa which fits very well with the analytical solution. 
+
+\section*{Bi-material beam model}
+In many application, different material domains with contrasting properties are adjacent to each other. This can pose numerical difficulties and model accuracy needs to be tested before application. For this purpose, a composite material composed of a cylindrical core and an annular domain of a different material were modelled as an axisymmetric domain with three materials was set up as illustrated in Fig.~\ref{fig:bp}. The third material is the interface between the two material domains by which we control the mechanical and hydraulic connectivity of the two adjacent domains. The relationship of the different properties of the composite beam was set up as follows: \\
+%In this case, a composite beam model of axisymmetry with three different materials was built (See Fig. \ref{fig:hete_setup}). 
+\begin{figure}
+	\centering
+		\includegraphics*[width=3in, keepaspectratio=false]{figures/cbeam.pdf}
+	\caption{Bi-material domain. Texture indicates material domains 1, 2 (interface) and 3.}
+	\label{fig:bp}
+\end{figure} 
+%\begin{figure}
+%	\centering
+%		\includegraphics*[width=3in]{chapter_thm/figures/THM_hete_setup.png}
+%	\caption{Heterogeneous model setup}
+%	\label{fig:hete_setup}
+%\end{figure} 
+\begin{minipage}{0.4\textwidth}
+\textbf{Case 1 (sealed test):}
+\begin{align*}
+E_1 &= 2 E_3 \\
+\nu_1 &= \nu_2 = \nu_3 \\
+\alpha_\mrm{TS1} &= \frac{1}{2} \alpha_\mrm{TS3} \\
+\mbfs{\kappa}_1 &= \mbfs{\kappa}_3 \\
+E_2 &= \frac{1}{100} E_3 \\
+\alpha_\mrm{TS2} &= \frac{1}{2} \alpha_\mrm{TS3} \\
+\mbfs{\kappa}_2 &\approx 0
+\end{align*}
+\end{minipage}
+\hfill
+\begin{minipage}{0.4\textwidth}
+\textbf{Case 2 (unsealed test):}
+\begin{align*}
+E_1 &= 2 E_3 \\
+\nu_1 &= \nu_2 = \nu_3 \\
+\alpha_\mrm{TS1} &= \frac{1}{2} \alpha_\mrm{TS3} \\
+\mbfs{\kappa}_1 &= \mbfs{\kappa}_3 \\
+E_2 &= \frac{1}{100} E_3 \\
+\alpha_\mrm{TS2} &= \frac{1}{2}\alpha_\mrm{TS3} \\ 
+\mbfs{\kappa}_2 &= \mbfs{\kappa}_3
+\end{align*}
+\end{minipage} \bigskip
+The porosity and the Biot coefficient of the intermediate layer were both set to 0 to block the effect of temperature and pressure on solid deformation in this region and make the interface passive.
+
+Due to the different thermal expansion coefficients between material 1 and material 3, the thermally induced volume changes of these two materials are different, which produces different fluid pressures in the materials.
+
+For the two cases, the bottom of the model is constrained in vertical direction and the left side is constrained in horizontal direction. Temperature of 363.15\,K is applied to the left side of the domain. The initial temperature of the whole area is set to 283.15\,K. For case 1, the domain is sealed and for case 2, there is a Dirichlet boundary $p = 0$ on the right side. 
+
+Case 1 would be expected to capture this feature as if the two materials were separated from each other. 
+The impermeable intermediate layer ($\kappa_2 \approx 0$) would prevent the flow moving mass from regions of higher pressure to those of lower pressure. The thermally induced volume change in material 1 is smaller than that of material 2 which leads to $p_1 > p_3$ given an identical pore fluid. Assuming the intermediate layer allowed free expansion of the neighbouring two materials, the analytical solution for the fluid pressure in each domain is 
+
+The same solver settings were used as in the previous example. The space discretization is 927 quadratic elements and the time discretization is 10\,s with 10 time steps.
+
+By comparing the analytical solution of the fluid pressure in the two domains, $p_1^\mrm{analytical} = 0.02604$\,MPa and $p_3^\mrm{analytical} = 0.01155$\,MPa to the numerical approximation, $p_1^\mrm{numerical} = 0.0278$\,MPa and $p_3^\mrm{numerical} = 0.0123$\,MPa, a good correspondence is found. Note that due to $\mbfs{\kappa}_2 \approx 0 \neq 0$ fluid mass is indeed moved from one domain to the other given enough time. The simulation thus needs to take this time scale into account if hydraulic isolation is to be modelled.
+
+
+The approxiamte numerical result can be found in Fig. \ref{fig:hete_pressure}. $p_1^\mrm{numerical} = 0.0241$\,MPa and $p_3^\mrm{numerical} = 0.01322$\,MPa 
+\begin{figure}
+	\centering
+		\includegraphics*[width=3in]{figures/THM_hete_pressure.png}
+	\caption{Pressure distribution in the composite beam}
+	\label{fig:hete_pressure}
+\end{figure} 
+%With the analytical solution of different regions from Section \ref{sec:OGS5}, $p_1^\mrm{analytical} = 0.02604$\,MPa and $p_3^\mrm{analytical} = 0.01155$\,MPa, the relative error is 7.45 percent for the maximum value and 14.45 percent for the minimum value. While in OGS-5, the relative error is 6.7 percent for the maximum value and 6.5 percent for the minimum value.
+
+Case 2 established a hydraulic connection between the two reservoirs. To estimate the average modulus of the bi-material domain, the rule of mixtures was applied. 
+Here, $E_\mrm{S} = \phi_\mrm{S}^\mrm{S1} {E_\mrm{S1}} + (1 - \phi_\mrm{S}^\mrm{S1}) {E_\mrm{S2}}$ served as an upper-bound (in the direction of parallel to the "springs") and $E_\mrm{S} = \left( \frac{\phi_\mrm{S}^\mrm{S1}}{E_\mrm{S1}} + \frac{1 - \phi_\mrm{S}^\mrm{S1}}{E_\mrm{S2}} \right)^{-1}$ as a lower-bound estimate (considering springs in series). The Poisson's ratios in all domains were equal $\nu_\mrm{S} = \nu_1 = \nu_2$, and $\phi_\mrm{S}^\mrm{S1} = \frac{V_\mrm{S1}}{V_\mrm{S1} + V_\mrm{S2}}$ etc.
+
+The same method can be used to obtain the overall thermal expansion coefficient of the solid phase.
+
+Thus, the analytical solution of the fluid pressure caused by thermal expansion evaluates to $p_\mrm{upper}^\mrm{analytical} = 0.01879$\,MPa and $p_\mrm{lower}^\mrm{analytical} = 0.01638$\,MPa. By numerical simulation, $p^\mrm{numerical} = 0.01634$\,MPa are found which is close to the lower bound. This is reminiscent of the fact that due to the externally unconstrained expansion and the internal fluid pressure equilibration, this set-up corresponds to the spring-in-series analogy.
+
+\begin{figure}
+	\centering
+		\includegraphics*[width=3in, keepaspectratio=false]{figures/cbeam_pus.png}
+	\caption{Pressure distribution of the unsealed test (case 2).}
+	\label{fig:bpus}
+\end{figure} 
+
+
+\section*{Point heat source consolidation model}
+When a heat source such as a canister of radioactive waste is buried in a saturated porous medium, the variation of temperature that occur will casue the pore water to expand a greater amount than the voids of the porous material. The
+temperature lift will thus usually be accompanied by an increase in pore pressure. If the domain is sufficiently
+permeable these pore pressures will dissipate. The derivation of analytical solution can be found in \cite{kolditz2016thermo}. \\
+A 2D axisymmertic model is set up for the verification. The model domain and meshes can be found in Fig. \ref{fig:mesh_domain}. A line source is seleted to represent the injection source (0.00204357\,m in this case) which is located between center point of the quarter and the closest node. After the axisymmetric rotation around the vertical direction, the line source has converted into a circular source and the Neumann boundary heat flux can be thus calculated by $300/2/(\pi r^2)$W. The radius of the domain is 10\,m and the initial temperature and pore pressure are 273\,K and 0\,Pa respectively. The model parameters can be found in Table \ref{tab:benchmark_param_point_heat}. Three different observation locations are selected for the analytical and numerical solutions (0.25\,m, 0.5\,m and 1\,m from the injection source).
+\begin{table}[H]
+  \centering
+  \caption{Parameters for the point heat source consolidation}
+  \label{tab:benchmark_param_point_heat}
+  \begin{tabular}{ l  r  r }
+    \hline
+    Parameter & \qquad\qquad Value & Unit \\
+    \hline
+    Initial Temperature & \qquad\qquad 283.15 & $^{\circ}$C \\
+    porosity & \qquad\qquad 0.16 & - \\
+    Water specific heat capacity & \qquad\qquad 4280 & J kg$^{-1}$ K$^{-1}$\\ 
+    Water thermal conductivity & \qquad\qquad 0.56 & W m$^{-1}$ K$^{-1}$ \\
+    Water real density & \qquad\qquad 1000 & kg m$^{-3}$  \\
+    Solid specific heat capacity & \qquad\qquad 1000 & J kg$^{-1}$ K$^{-1}$\\
+    Solid thermal conductivity & \qquad\qquad 1.64 & W m$^{-1}$ K$^{-1}$ \\ 
+    Solid real density & \qquad\qquad 2450 & kg m$^{-3}$  \\
+    Intrinsic permeability & \qquad\qquad  2$\cdot$10\uexp{-20} & m$^2$ \\
+    Viscosity & \qquad\qquad  1$\cdot$10\uexp{-3} & Pa s  \\
+    Time step size & \qquad\qquad 10000 &  s \\
+    Young's modulus &  \qquad\qquad 5 & GPa \\
+    Poisson's ratio  &  \qquad\qquad 0.3 & - \\
+    Biot coefficient  &  \qquad\qquad 1 & - \\
+    Fluid volumetric thermal expansion coefficient &  \qquad\qquad 4$\cdot$ 10\uexp{-4}  & 1/K \\
+    Solid linear thermal expansion coefficient &  \qquad\qquad 4.5$\cdot$ 10\uexp{-5}  & 1/K \\
+  \hline
+  \end{tabular}
+\end{table}
+\begin{figure}
+	\centering
+		\includegraphics*[width=3in]{figures/mesh_heatinjection_crop.png}
+	\caption{Mesh distribution and domain}
+	\label{fig:mesh_domain}
+\end{figure} 
+
+\begin{figure}
+	\centering
+		\includegraphics*[width=0.95\textwidth]{figures/temperature.pdf}
+	\caption{The numerical solution compared with analytical solution (temperature)}
+	\label{fig:point_injection_temperature}
+\end{figure} 
+\begin{figure}
+	\centering
+		\includegraphics*[width=0.95\textwidth]{figures/pressure.pdf}
+	\caption{The numerical solution compared with analytical solution (pressure)}
+	\label{fig:point_injection_pressure}
+\end{figure} 
+\begin{figure}
+	\centering
+		\includegraphics*[width=0.95\textwidth]{figures/displacement.pdf}
+	\caption{The numerical solution compared with analytical solution (displacement)}
+	\label{fig:point_injection_displacement}
+\end{figure} 
+
+
+
+From Fig. \ref{fig:point_injection_temperature} and Fig. \ref{fig:point_injection_pressure}, we can find a generally good match of the numerical solution and analytical solution. In Fig. \ref{fig:point_injection_temperature}, the difference gets larger with the further observation location because the density of the mesh is very fine around the injection point and quickly becomes coarser and coarser along the radius. Since the chosen point is on the displacment boundary and do not have displacement in the y direction, the displacement on the x direction is plotted.  
+
+
+\bibliographystyle{unsrt}%Used BibTeX style is unsrt
+\bibliography{sample}
+
+\end{document}
